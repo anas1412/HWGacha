@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>هيفاء وهبي — لعبة الكروت على ديسكورد</title>
+<meta name="description" content="بوت ديسكورد على طريقة Mudae: ارمِ كروت هيفاء وهبي، اطلبها، اجمعها، وتبادلها.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --velvet:#2a0812;      /* page ground: red-velvet curtain */
+    --velvet-deep:#170409;
+    --gold:#d9a441;        /* الملكة */
+    --gold-soft:#f1d28a;
+    --ivory:#f4e7d3;
+    --ivory-dim:#c9b8a3;
+    --rose:#e0557b;
+    --r-common:#a7a7a7; --r-special:#4fcf86; --r-rare:#4aa3ea; --r-legend:#b06be0; --r-queen:#f1c40f;
+    --display:"Aref Ruqaa",serif;
+    --body:"IBM Plex Sans Arabic",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;font-family:var(--body);font-weight:300;color:var(--ivory);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #5a1226 0%, transparent 60%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.018) 0 2px, transparent 2px 46px),
+      linear-gradient(180deg, var(--velvet) 0%, var(--velvet-deep) 100%);
+    background-attachment:fixed;line-height:1.75;
+  }
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* ---------- hero ---------- */
+  header{padding:64px 0 32px}
+  .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--gold-soft);text-transform:uppercase;direction:ltr;text-align:right}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(56px,9vw,112px);line-height:1;margin:8px 0 12px;color:var(--gold);text-shadow:0 2px 0 #6b4a12,0 18px 40px rgba(0,0,0,.45)}
+  .lede{font-size:20px;max-width:34ch;color:var(--ivory);margin:0 0 28px}
+  .lede b{font-weight:600;color:var(--gold-soft)}
+  .cta{display:inline-flex;align-items:center;gap:12px;background:var(--gold);color:#1d0b02;text-decoration:none;font-weight:600;font-size:18px;padding:14px 26px;border-radius:999px;box-shadow:0 10px 30px rgba(217,164,65,.28);transition:transform .15s ease,box-shadow .15s ease}
+  .cta:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(217,164,65,.4)}
+  .cta:focus-visible{outline:3px solid var(--ivory);outline-offset:3px}
+  .cta svg{width:22px;height:22px;fill:currentColor}
+  .perm{margin-top:14px;font-size:13px;color:var(--ivory-dim)}
+  .perm code{font-family:var(--mono);font-size:12px;color:var(--ivory);background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;direction:ltr;display:inline-block}
+
+  /* signature: fan of real cards */
+  .fan{position:relative;height:420px;perspective:1200px}
+  .card{position:absolute;bottom:0;left:50%;width:210px;aspect-ratio:3/4;border-radius:14px;overflow:hidden;
+    border:3px solid var(--rc);box-shadow:0 30px 50px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.08);
+    transform-origin:50% 120%;transform:translateX(-50%) rotate(var(--rot)) translateY(var(--lift));
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);background:#000}
+  .card img{width:100%;height:100%;object-fit:cover;display:block}
+  .card span{position:absolute;inset:auto 0 0 0;padding:26px 12px 10px;font-size:14px;font-weight:500;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.85));color:#fff}
+  .card span i{font-style:normal;color:var(--rc);font-family:var(--mono);font-size:11px;display:block;letter-spacing:.06em}
+  .card:hover{transform:translateX(-50%) rotate(var(--rot)) translateY(calc(var(--lift) - 26px)) scale(1.04);z-index:9}
+  .card:nth-child(1){--rot:-22deg;--lift:34px}
+  .card:nth-child(2){--rot:-10deg;--lift:10px}
+  .card:nth-child(3){--rot:2deg;--lift:0}
+  .card:nth-child(4){--rot:14deg;--lift:14px}
+  .card:nth-child(5){--rot:26deg;--lift:40px}
+  @keyframes deal{from{opacity:0;transform:translateX(-50%) rotate(0) translateY(160px)}}
+  .card{animation:deal .9s cubic-bezier(.2,.8,.2,1) both}
+  .card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.12s}.card:nth-child(3){animation-delay:.19s}.card:nth-child(4){animation-delay:.26s}.card:nth-child(5){animation-delay:.33s}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0;border-top:1px solid rgba(217,164,65,.18)}
+  h2{font-family:var(--display);font-weight:400;font-size:40px;color:var(--gold-soft);margin:0 0 6px;line-height:1.2}
+  .sub{margin:0 0 28px;color:var(--ivory-dim);max-width:60ch}
+
+  /* rarity ladder */
+  .ladder{display:grid;gap:10px}
+  .tier{display:grid;grid-template-columns:auto 1fr auto auto;gap:18px;align-items:center;padding:14px 18px;border-radius:12px;
+    background:rgba(255,255,255,.035);border-right:6px solid var(--tc)}
+  .tier .name{font-weight:600;font-size:20px;color:var(--tc)}
+  .tier .bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+  .tier .bar i{display:block;height:100%;width:var(--w);background:var(--tc)}
+  .tier .num{font-family:var(--mono);font-size:14px;color:var(--ivory);direction:ltr;min-width:6ch;text-align:right}
+  .tier .cnt{font-size:13px;color:var(--ivory-dim);min-width:8ch}
+  .ladder-note{margin-top:14px;font-size:14px;color:var(--ivory-dim)}
+
+  /* commands */
+  .cmds{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .cmd{padding:16px 18px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.07)}
+  .cmd code{font-family:var(--mono);font-size:15px;color:var(--gold-soft);direction:ltr;display:block;text-align:left;margin-bottom:6px}
+  .cmd p{margin:0;font-size:15px}
+
+  /* rules */
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .rule{padding:22px;border-radius:14px;background:linear-gradient(160deg,rgba(217,164,65,.14),rgba(217,164,65,.03));border:1px solid rgba(217,164,65,.28)}
+  .rule .big{font-family:var(--display);font-size:52px;line-height:1;color:var(--gold);margin-bottom:6px}
+  .rule p{margin:0;font-size:15px}
+
+  footer{padding:36px 0 56px;color:var(--ivory-dim);font-size:14px;border-top:1px solid rgba(217,164,65,.18)}
+  footer a{color:var(--gold-soft)}
+
+  @media (max-width:820px){
+    .hero{grid-template-columns:1fr}
+    .fan{height:340px}
+    .card{width:170px}
+    h2{font-size:32px}
+    .tier{grid-template-columns:auto 1fr;grid-auto-rows:auto}
+    .tier .bar{grid-column:1/-1}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .card{animation:none}
+    .card:hover,.cta:hover{transform:translateX(-50%) rotate(var(--rot)) translateY(var(--lift))}
+    .cta:hover{transform:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Discord · Gacha · 100 cards</div>
+      <h1>هيفاء وهبي</h1>
+      <p class="lede">لعبة كروت على ديسكورد على طريقة <b>Mudae</b>. ارمِ كرتاً كل يوم، اطلبه قبل غيرك، اجمع المجموعة، وتبادل مع أصحابك حتى تصل إلى <b>الملكة</b>.</p>
+      <a class="cta" href="https://discord.com/oauth2/authorize?client_id=1545127309353287761&scope=bot%20applications.commands&permissions=2147534848" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18 18 0 0 1 4.6 2.3 15.6 15.6 0 0 0-15.6 0A18 18 0 0 1 8.8 3.4L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 0 13.6.3 18a20 20 0 0 0 6 3l1.3-2a12.8 12.8 0 0 1-2-1l.5-.4a14.3 14.3 0 0 0 11.8 0l.5.4a12.8 12.8 0 0 1-2 1l1.3 2a20 20 0 0 0 6-3c.4-5.2-.7-9.6-3.4-13.6ZM8.7 15.3c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4Zm6.6 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4Z"/></svg>
+        أضِف البوت إلى سيرفرك
+      </a>
+      <p class="perm">بدون صلاحيات إدارية. يطلب فقط: <code>Send Messages</code> <code>Embed Links</code> <code>Attach Files</code> <code>Slash Commands</code></p>
+    </div>
+
+    <div class="fan" aria-label="أمثلة على الكروت">
+      <figure class="card" style="--rc:var(--r-common)"><img src="images/h40.jpg" alt=""><span><i>عادية</i>سيلفي السيارة</span></figure>
+      <figure class="card" style="--rc:var(--r-rare)"><img src="images/h20.jpg" alt=""><span><i>نادرة</i>قبلة الياقوت</span></figure>
+      <figure class="card" style="--rc:var(--r-queen)"><img src="images/h01.jpg" alt=""><span><i>الملكة</i>الملكة بالأحمر الخالد</span></figure>
+      <figure class="card" style="--rc:var(--r-legend)"><img src="images/h05.jpg" alt=""><span><i>أسطورية</i>ملكة الستائر الحمراء</span></figure>
+      <figure class="card" style="--rc:var(--r-special)"><img src="images/h26.jpg" alt=""><span><i>مميزة</i>الملكة والرولز</span></figure>
+    </div>
+  </div>
+</header>
+
+<section class="wrap" id="rarity">
+  <h2>خمس درجات من الندرة</h2>
+  <p class="sub">كل كرت له درجة. الدرجة تحدد كم يظهر في الرمي وكم نقطة يضيف لمجموعتك في قائمة المتصدرين.</p>
+  <div class="ladder">
+    <div class="tier" style="--tc:var(--r-queen);--w:2%"><div class="name">👑 الملكة</div><div class="bar"><i></i></div><div class="num">2%</div><div class="cnt">6 كروت · 50 نقطة</div></div>
+    <div class="tier" style="--tc:var(--r-legend);--w:6%"><div class="name">أسطورية</div><div class="bar"><i></i></div><div class="num">6%</div><div class="cnt">12 كرت · 20 نقطة</div></div>
+    <div class="tier" style="--tc:var(--r-rare);--w:14%"><div class="name">نادرة</div><div class="bar"><i></i></div><div class="num">14%</div><div class="cnt">24 كرت · 8 نقاط</div></div>
+    <div class="tier" style="--tc:var(--r-special);--w:28%"><div class="name">مميزة</div><div class="bar"><i></i></div><div class="num">28%</div><div class="cnt">30 كرت · 3 نقاط</div></div>
+    <div class="tier" style="--tc:var(--r-common);--w:50%"><div class="name">عادية</div><div class="bar"><i></i></div><div class="num">50%</div><div class="cnt">28 كرت · 1 نقطة</div></div>
+  </div>
+  <p class="ladder-note">النسبة هي احتمال أن يقع الرمي على هذه الدرجة. الكروت مملوكة لكل سيرفر على حدة.</p>
+</section>
+
+<section class="wrap" id="rules">
+  <h2>قواعد اليوم</h2>
+  <p class="sub">كل شيء يتجدد عند منتصف الليل.</p>
+  <div class="rules">
+    <div class="rule"><div class="big">3</div><p>رميّات في اليوم لكل لاعب</p></div>
+    <div class="rule"><div class="big">1</div><p>طلب في اليوم. اختر كرتك جيداً</p></div>
+    <div class="rule"><div class="big">💍</div><p>زر الطلب يبقى دقيقتين بعد الرمي. الأسرع يفوز</p></div>
+    <div class="rule"><div class="big">🤝</div><p>التبادل يحتاج قبول الطرف الآخر خلال 5 دقائق</p></div>
+  </div>
+</section>
+
+<section class="wrap" id="commands">
+  <h2>الأوامر</h2>
+  <p class="sub">كلها أوامر مائلة. اكتب <code style="font-family:var(--mono);direction:ltr;display:inline-block">/</code> في ديسكورد وستظهر.</p>
+  <div class="cmds">
+    <div class="cmd"><code>/roll</code><p>ارمِ كرتاً عشوائياً. إن كان متاحاً يظهر زر 💍 لطلبه.</p></div>
+    <div class="cmd"><code>/collection [member]</code><p>مجموعتك أو مجموعة عضو، مرتبة حسب الندرة مع النقاط.</p></div>
+    <div class="cmd"><code>/card &lt;name&gt;</code><p>ابحث عن كرت بالاسم وشاهد من يملكه.</p></div>
+    <div class="cmd"><code>/top</code><p>قائمة المتصدرين في السيرفر.</p></div>
+    <div class="cmd"><code>/gift &lt;member&gt; &lt;name&gt;</code><p>اهدِ كرتاً من مجموعتك.</p></div>
+    <div class="cmd"><code>/exchange &lt;member&gt; &lt;my_card&gt; &lt;their_card&gt;</code><p>اعرض تبادل كرت بكرت. الطرف الآخر يقبل أو يرفض.</p></div>
+    <div class="cmd"><code>/divorce &lt;name&gt;</code><p>تخلَّ عن كرت ليعود متاحاً للجميع.</p></div>
+    <div class="cmd"><code>/rescan</code><p>للإدارة: سجّل الصور الجديدة في مجلد images.</p></div>
+  </div>
+</section>
+
+<footer class="wrap">
+  البوت مفتوح المصدر ومستضاف ذاتياً. الصور من مصادر عامة لاستخدام خاص داخل السيرفر.
+  <br>الكود على <a href="https://github.com/anas1412/HWGacha">GitHub</a>.
+</footer>
+
+</body>
+</html>

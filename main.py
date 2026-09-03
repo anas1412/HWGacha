@@ -163,6 +163,16 @@ async def on_guild_join(guild):
     log.info("joined %s, commands synced", guild.name)
 
 
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    name = interaction.command.name if interaction.command else "?"
+    original = getattr(error, "original", error)
+    if isinstance(original, discord.NotFound) and original.code == 10062:
+        log.warning("/%s: Discord dropped the interaction before we answered (slow connection). Ignored.", name)
+        return
+    log.error("/%s failed", name, exc_info=error)
+
+
 # ---------- commands ----------
 
 @bot.tree.command(description="ارمي كرت هيفاء عشوائي")
@@ -178,25 +188,26 @@ async def roll(interaction: discord.Interaction):
     if card is None:
         await interaction.response.send_message("ما في كروت بعد. حطّ صور في مجلد images وجرّب /rescan", ephemeral=True)
         return
+    await interaction.response.defer()  # acknowledge within Discord's 3-second window
     db.record_roll(gid, uid)
     owner = db.owner_of(gid, card["id"])
     embed = card_embed(card, owner)
     embed.set_footer(text=f"رميّات متبقية اليوم: {ROLLS_PER_DAY - used - 1}/{ROLLS_PER_DAY}")
     if owner:
-        await interaction.response.send_message(embed=embed, **card_kwargs(card))
+        await interaction.followup.send(embed=embed, **card_kwargs(card))
         return
     view = ClaimView(card)
-    await interaction.response.send_message(embed=embed, view=view, **card_kwargs(card))
-    view.message = await interaction.original_response()
+    view.message = await interaction.followup.send(embed=embed, view=view, wait=True, **card_kwargs(card))
 
 
 @bot.tree.command(description="شوف مجموعتك أو مجموعة عضو")
 @app_commands.describe(member="العضو (اختياري)")
 async def collection(interaction: discord.Interaction, member: discord.Member | None = None):
+    await interaction.response.defer()
     member = member or interaction.user
     cards = db.collection(interaction.guild_id, member.id)
     if not cards:
-        await interaction.response.send_message(f"{member.display_name} ما عنده كروت بعد 🥲")
+        await interaction.followup.send(f"{member.display_name} ما عنده كروت بعد")
         return
     points = sum(RARITIES[c["rarity"]]["points"] for c in cards)
     e = discord.Embed(title=f"مجموعة {member.display_name}", color=0xE91E63)
@@ -207,7 +218,7 @@ async def collection(interaction: discord.Interaction, member: discord.Member | 
             shown = names[:15]
             more = f"\n… و{len(names) - 15} غيرها" if len(names) > 15 else ""
             e.add_field(name=f"{RARITIES[tier]['emoji']} {tier} ({len(names)})", value="\n".join(shown) + more, inline=False)
-    await interaction.response.send_message(embed=e)
+    await interaction.followup.send(embed=e)
 
 
 @bot.tree.command(description="ابحث عن كرت بالاسم")
@@ -217,22 +228,24 @@ async def card(interaction: discord.Interaction, name: str):
     if not c:
         await interaction.response.send_message("ما لقيت كرت بهذا الاسم", ephemeral=True)
         return
+    await interaction.response.defer()
     owner = db.owner_of(interaction.guild_id, c["id"])
-    await interaction.response.send_message(embed=card_embed(c, owner), **card_kwargs(c))
+    await interaction.followup.send(embed=card_embed(c, owner), **card_kwargs(c))
 
 
 @bot.tree.command(description="قائمة المتصدرين")
 async def top(interaction: discord.Interaction):
+    await interaction.response.defer()
     board = db.leaderboard(interaction.guild_id)
     if not board:
-        await interaction.response.send_message("ما حد طلب شي بعد")
+        await interaction.followup.send("ما حد طلب شي بعد")
         return
     medals = ["🥇", "🥈", "🥉"]
     lines = [
         f"{medals[i] if i < 3 else f'{i + 1}.'} <@{uid}> — {pts} نقطة · {cnt} كرت"
         for i, (uid, (pts, cnt)) in enumerate(board)
     ]
-    await interaction.response.send_message(embed=discord.Embed(title="👑 المتصدرون", description="\n".join(lines), color=0xF1C40F))
+    await interaction.followup.send(embed=discord.Embed(title="👑 المتصدرون", description="\n".join(lines), color=0xF1C40F))
 
 
 @bot.tree.command(description="تخلَّ عن كرت من مجموعتك")
@@ -305,4 +318,4 @@ def load_token():
 
 
 if __name__ == "__main__":
-    bot.run(load_token())
+    bot.run(load_token(), log_handler=None)

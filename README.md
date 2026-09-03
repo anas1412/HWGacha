@@ -1,4 +1,4 @@
-# هيفاء وهبي Gacha Bot 👑
+# Haifu Rolls
 
 Mudae-style card game for Discord. Every card is a Haifa Wehbe photo.
 **100 cards are included** in `images/` with hand-picked rarities and Arabic names (`seed.json`).

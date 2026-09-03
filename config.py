@@ -20,5 +20,5 @@ IMAGES_DIR = "images"
 # Optional: serve card images from a public URL instead of uploading them as attachments.
 # Example (only works if the GitHub repo is PUBLIC):
 #   IMAGE_BASE_URL = "https://raw.githubusercontent.com/anas1412/HWGacha/main/images"
-IMAGE_BASE_URL = ""
+IMAGE_BASE_URL = "https://raw.githubusercontent.com/anas1412/HWGacha/main/images"
 DB_PATH = "haifa.db"

@@ -57,14 +57,9 @@ Slash commands can take up to an hour to appear the first time. Kick the bot and
 
 ## Card images: attachments or URLs
 
-By default the bot uploads each card image as an attachment. If you make this repo **public**, you can serve
-images from GitHub instead by setting in `config.py`:
-
-```
-IMAGE_BASE_URL = "https://raw.githubusercontent.com/anas1412/HWGacha/main/images"
-```
-
-Discord cannot fetch raw links from a private repo, so leave it empty while the repo is private.
+Card images are served from this repo's raw GitHub URLs (`IMAGE_BASE_URL` in `config.py`). This only works while
+the repo is **public**. If you make it private, set `IMAGE_BASE_URL = ""` and the bot uploads images as attachments instead.
+New photos added with `/rescan` must also be pushed to GitHub before their URL works.
 
 ## Files
 

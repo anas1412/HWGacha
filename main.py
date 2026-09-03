@@ -10,7 +10,7 @@ from discord.ext import commands
 
 import db
 import scanner
-from config import CLAIM_WINDOW_SECONDS, IMAGES_DIR, RARITIES, ROLLS_PER_DAY
+from config import CLAIM_WINDOW_SECONDS, IMAGE_BASE_URL, IMAGES_DIR, RARITIES, ROLLS_PER_DAY
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
 log = logging.getLogger("bot")
@@ -25,12 +25,18 @@ def card_embed(card, owner_id=None):
     e = discord.Embed(title=f"{r['emoji']} {card['name']}", description=card["description"], color=r["color"])
     e.add_field(name="الندرة", value=card["rarity"])
     e.add_field(name="المالك", value=f"<@{owner_id}>" if owner_id else "متاحة 💍")
-    e.set_image(url=f"attachment://{card['file']}")
+    if IMAGE_BASE_URL:
+        e.set_image(url=f"{IMAGE_BASE_URL.rstrip('/')}/{card['file']}")
+    else:
+        e.set_image(url=f"attachment://{card['file']}")
     return e
 
 
-def card_file(card):
-    return discord.File(os.path.join(IMAGES_DIR, card["file"]), filename=card["file"])
+def card_kwargs(card):
+    """Extra send() arguments: the image as an attachment unless IMAGE_BASE_URL is set."""
+    if IMAGE_BASE_URL:
+        return {}
+    return {"file": discord.File(os.path.join(IMAGES_DIR, card["file"]), filename=card["file"])}
 
 
 def pick_card():
@@ -156,10 +162,10 @@ async def roll(interaction: discord.Interaction):
     embed = card_embed(card, owner)
     embed.set_footer(text=f"رميّات متبقية اليوم: {ROLLS_PER_DAY - used - 1}/{ROLLS_PER_DAY}")
     if owner:
-        await interaction.response.send_message(embed=embed, file=card_file(card))
+        await interaction.response.send_message(embed=embed, **card_kwargs(card))
         return
     view = ClaimView(card)
-    await interaction.response.send_message(embed=embed, file=card_file(card), view=view)
+    await interaction.response.send_message(embed=embed, view=view, **card_kwargs(card))
     view.message = await interaction.original_response()
 
 
@@ -191,7 +197,7 @@ async def card(interaction: discord.Interaction, name: str):
         await interaction.response.send_message("ما لقيت كرت بهذا الاسم", ephemeral=True)
         return
     owner = db.owner_of(interaction.guild_id, c["id"])
-    await interaction.response.send_message(embed=card_embed(c, owner), file=card_file(c))
+    await interaction.response.send_message(embed=card_embed(c, owner), **card_kwargs(c))
 
 
 @bot.tree.command(description="قائمة المتصدرين")

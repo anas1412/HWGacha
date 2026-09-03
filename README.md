@@ -34,22 +34,16 @@ Limits: **3 rolls per day**, **1 claim per day**. Both reset at **midnight**, lo
 1. Create the bot at https://discord.com/developers/applications → New Application → Bot → **Reset Token**, copy it.
 2. Same page → OAuth2 → URL Generator: scope `bot` + `applications.commands`,
    permissions `Send Messages`, `Embed Links`, `Attach Files`. Open the URL to invite the bot to your server.
-3. Install and run:
-
-```bash
-pip install -r requirements.txt
-```
-
-Create a file named `.env` in this folder with one line:
+3. Create a file named `.env` in this folder with one line:
 
 ```
 DISCORD_TOKEN=paste_token_here
 ```
 
-Then start the bot:
+4. Start the bot. This creates a local `.venv`, installs the requirements into it, and runs `main.py`. Nothing is installed globally.
 
 ```bash
-python3 main.py
+python3 start.py
 ```
 
 On first start the bot registers the 100 seeded cards. Add more photos to `images/` later and run `/rescan`.
@@ -61,10 +55,23 @@ A free Repl sleeps when you close the tab; Reserved VM deployment keeps it up.
 
 Slash commands can take up to an hour to appear the first time. Kick the bot and re-invite it if they don't show.
 
+## Card images: attachments or URLs
+
+By default the bot uploads each card image as an attachment. If you make this repo **public**, you can serve
+images from GitHub instead by setting in `config.py`:
+
+```
+IMAGE_BASE_URL = "https://raw.githubusercontent.com/anas1412/HWGacha/main/images"
+```
+
+Discord cannot fetch raw links from a private repo, so leave it empty while the repo is private.
+
 ## Files
 
 - `main.py` – Discord bot and commands
 - `scanner.py` – registers new photos: uses `seed.json` if the file is listed there, else random (edit the name lists here)
 - `seed.json` – the 100 curated cards: file, name, rarity, description. Edit names or rarities here before first run
 - `db.py` – SQLite (`haifa.db`): cards, owners, cooldowns. Ownership is per server.
-- `config.py` – rarities, weights, points, cooldowns
+- `config.py` – rarities, weights, points, daily limits, optional `IMAGE_BASE_URL`
+- `start.py` – one-command launcher that manages the `.venv`
+- `index.html` – landing page with the invite link (open it locally, or serve it from anywhere)

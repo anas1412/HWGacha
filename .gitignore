@@ -1,3 +1,5 @@
 haifa.db
 __pycache__/
 .env
+.claude/
+.venv/

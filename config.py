@@ -14,7 +14,7 @@ RARITIES = {
 ROLLS_PER_DAY = 3            # rolls each player gets per day
 # One claim per player per day (fixed).
 # Both reset at midnight, local time of the machine running the bot.
-CLAIM_WINDOW_SECONDS = 120   # how long the claim button stays alive after a roll
+CLAIM_WINDOW_SECONDS = 30    # how long the claim button stays alive after a roll
 
 IMAGES_DIR = "images"
 # Optional: serve card images from a public URL instead of uploading them as attachments.

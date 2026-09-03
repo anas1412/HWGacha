@@ -1,7 +1,7 @@
 # Haifu Rolls
 
 Mudae-style card game for Discord. Every card is a Haifa Wehbe photo.
-**100 cards are included** in `images/` with hand-picked rarities and Arabic names (`seed.json`).
+**500 cards are included** in `images/` with hand-picked rarities and Arabic names (`seed.json`).
 Any new photo you drop in later gets a random **rarity** (weighted dice) and a name from a curated list.
 
 ## Commands
@@ -46,7 +46,7 @@ DISCORD_TOKEN=paste_token_here
 python3 start.py
 ```
 
-On first start the bot registers the 100 seeded cards. Add more photos to `images/` later and run `/rescan`.
+On first start the bot registers the 500 seeded cards. Add more photos to `images/` later and run `/rescan`.
 
 ## Run on Replit (alternative)
 
@@ -80,7 +80,7 @@ python3 optimize_images.py
 
 - `main.py` – Discord bot and commands
 - `scanner.py` – registers new photos: uses `seed.json` if the file is listed there, else random (edit the name lists here)
-- `seed.json` – the 100 curated cards: file, name, rarity, description. Edit names or rarities here before first run
+- `seed.json` – the 500 curated cards: file, name, rarity, description. Edit names or rarities here before first run
 - `db.py` – SQLite (`haifa.db`): cards, owners, cooldowns. Ownership is per server.
 - `config.py` – rarities, weights, points, daily limits, optional `IMAGE_BASE_URL`
 - `start.py` – one-command launcher that manages the `.venv`

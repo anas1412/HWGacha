@@ -133,13 +133,27 @@ class ExchangeView(discord.ui.View):
 
 # ---------- events ----------
 
+async def sync_guild(guild):
+    """Per-server sync makes slash commands show up immediately (global sync can take up to an hour)."""
+    bot.tree.copy_global_to(guild=guild)
+    await bot.tree.sync(guild=guild)
+
+
 @bot.event
 async def on_ready():
     db.init()
     await bot.tree.sync()
-    log.info("logged in as %s", bot.user)
+    for guild in bot.guilds:
+        await sync_guild(guild)
+    log.info("logged in as %s, commands synced to %d server(s)", bot.user, len(bot.guilds))
     new, failed = await scanner.scan_new_images()
     log.info("startup scan: %d new cards, %d failed", len(new), len(failed))
+
+
+@bot.event
+async def on_guild_join(guild):
+    await sync_guild(guild)
+    log.info("joined %s, commands synced", guild.name)
 
 
 # ---------- commands ----------

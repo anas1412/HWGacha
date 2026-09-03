@@ -26,7 +26,8 @@ def optimize(path):
     buf = io.BytesIO()
     img.save(buf, "JPEG", quality=QUALITY, optimize=True, progressive=True)
     data = buf.getvalue()
-    if len(data) < before:
+    # Only rewrite when it saves at least 5%: avoids re-encoding already-optimized files on every commit.
+    if len(data) < before * 0.95:
         with open(path, "wb") as f:
             f.write(data)
     return before, os.path.getsize(path)

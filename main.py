@@ -133,21 +133,28 @@ class ExchangeView(discord.ui.View):
 
 # ---------- events ----------
 
+COMMANDS = None  # snapshot of the command definitions, taken once on first connect
+
+
 async def sync_guild(guild):
-    """Per-server sync makes slash commands show up immediately (global sync can take up to an hour)."""
-    bot.tree.copy_global_to(guild=guild)
+    """Register the commands on one server. Per-server commands show up instantly."""
+    for cmd in COMMANDS:
+        bot.tree.add_command(cmd, guild=guild, override=True)
     await bot.tree.sync(guild=guild)
 
 
 @bot.event
 async def on_ready():
+    global COMMANDS
     db.init()
-    await bot.tree.sync()
+    if COMMANDS is None:
+        COMMANDS = list(bot.tree.get_commands())
+        # Drop the global copies on Discord, otherwise every command appears twice.
+        bot.tree.clear_commands(guild=None)
+        await bot.tree.sync()
     for guild in bot.guilds:
         await sync_guild(guild)
     log.info("logged in as %s, commands synced to %d server(s)", bot.user, len(bot.guilds))
-    new, failed = await scanner.scan_new_images()
-    log.info("startup scan: %d new cards, %d failed", len(new), len(failed))
 
 
 @bot.event

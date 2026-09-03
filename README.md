@@ -61,6 +61,21 @@ Card images are served from this repo's raw GitHub URLs (`IMAGE_BASE_URL` in `co
 the repo is **public**. If you make it private, set `IMAGE_BASE_URL = ""` and the bot uploads images as attachments instead.
 New photos added with `/rescan` must also be pushed to GitHub before their URL works.
 
+## Images are compressed before commit
+
+`optimize_images.py` resizes card images to 1280 px max and re-encodes them as progressive JPEG.
+A git hook runs it on every staged image automatically. Enable the hook once per clone:
+
+```bash
+git config core.hooksPath hooks
+```
+
+To compress everything by hand:
+
+```bash
+python3 optimize_images.py
+```
+
 ## Files
 
 - `main.py` – Discord bot and commands
@@ -69,4 +84,5 @@ New photos added with `/rescan` must also be pushed to GitHub before their URL w
 - `db.py` – SQLite (`haifa.db`): cards, owners, cooldowns. Ownership is per server.
 - `config.py` – rarities, weights, points, daily limits, optional `IMAGE_BASE_URL`
 - `start.py` – one-command launcher that manages the `.venv`
+- `optimize_images.py` + `hooks/pre-commit` – image compression, automatic on commit
 - `index.html` – landing page with the invite link (open it locally, or serve it from anywhere)

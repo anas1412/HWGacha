@@ -1,0 +1,17 @@
+#!/bin/sh
+# Compress any staged image under images/ before it gets committed.
+# Enable once per clone:  git config core.hooksPath hooks
+root=$(git rev-parse --show-toplevel)
+staged=$(git diff --cached --name-only --diff-filter=AM -- 'images/*.jpg' 'images/*.jpeg' 'images/*.png' 'images/*.webp')
+[ -z "$staged" ] && exit 0
+
+py="$root/.venv/bin/python"
+[ -x "$py" ] || py=python3
+if ! "$py" -c "import PIL" 2>/dev/null; then
+  echo "pre-commit: Pillow missing. Run 'python3 start.py' once (it installs requirements), or: $py -m pip install pillow" >&2
+  exit 1
+fi
+
+cd "$root" || exit 1
+"$py" optimize_images.py $staged || exit 1
+git add $staged

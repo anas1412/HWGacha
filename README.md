@@ -27,45 +27,46 @@ Any new photo you drop in later gets a random **rarity** (weighted dice) and a n
 | 🟣 أسطورية | 6% | 20 |
 | 👑 الملكة | 2% | 50 |
 
-Rolls only show cards nobody in the server owns yet (`ROLL_ONLY_UNCLAIMED` in `config.py`; set to `False` to roll owned cards too).
+Rolls only show cards nobody in the server owns yet (`ROLL_ONLY_UNCLAIMED` in `src/config.ts`; set to `False` to roll owned cards too).
 
-Limits: **3 rolls per day**, **1 claim per day**. Both reset at **midnight**, local time of the machine running the bot. Numbers live in `config.py`.
+Limits: **3 rolls per day**, **1 claim per day**. Both reset at **midnight**, local time of the machine running the bot. Numbers live in `src/config.ts`.
 
 ## Run locally
 
 1. Create the bot at https://discord.com/developers/applications → New Application → Bot → **Reset Token**, copy it.
 2. Same page → OAuth2 → URL Generator: scope `bot` + `applications.commands`,
    permissions `Send Messages`, `Embed Links`, `Attach Files`. Open the URL to invite the bot to your server.
-3. Create a file named `.env` in this folder with one line:
+3. Install [Bun](https://bun.sh) (one command, no admin rights), then install the two dependencies:
+
+```bash
+bun install
+```
+
+4. Create a file named `.env` in this folder with one line. Bun loads it automatically.
 
 ```
 DISCORD_TOKEN=paste_token_here
 ```
 
-4. Start the bot. This creates a local `.venv`, installs the requirements into it, and runs `main.py`. Nothing is installed globally.
+5. Start the bot:
 
 ```bash
-python3 start.py
+bun start
 ```
 
 On first start the bot registers the 500 seeded cards. Add more photos to `images/` later and run `/rescan`.
-
-## Run on Replit (alternative)
-
-Upload the folder, add `DISCORD_TOKEN` in the Secrets tab (🔒), press **Run**.
-A free Repl sleeps when you close the tab; Reserved VM deployment keeps it up.
 
 Slash commands can take up to an hour to appear the first time. Kick the bot and re-invite it if they don't show.
 
 ## Card images: attachments or URLs
 
-Card images are served from this repo's raw GitHub URLs (`IMAGE_BASE_URL` in `config.py`). This only works while
+Card images are served from this repo's raw GitHub URLs (`IMAGE_BASE_URL` in `src/config.ts`). This only works while
 the repo is **public**. If you make it private, set `IMAGE_BASE_URL = ""` and the bot uploads images as attachments instead.
 New photos added with `/rescan` must also be pushed to GitHub before their URL works.
 
 ## Images are compressed before commit
 
-`optimize_images.py` resizes card images to 1280 px max and re-encodes them as progressive JPEG.
+`scripts/optimize-images.ts` resizes card images to 1280 px max and re-encodes them as progressive JPEG.
 A git hook runs it on every staged image automatically. Enable the hook once per clone:
 
 ```bash
@@ -75,16 +76,15 @@ git config core.hooksPath hooks
 To compress everything by hand:
 
 ```bash
-python3 optimize_images.py
+bun run optimize
 ```
 
 ## Files
 
-- `main.py` – Discord bot and commands
-- `scanner.py` – registers new photos: uses `seed.json` if the file is listed there, else random (edit the name lists here)
+- `src/index.ts` – Discord bot and commands (discord.js)
+- `src/scanner.ts` – registers new photos: uses `seed.json` if the file is listed there, else random (edit the name lists here)
 - `seed.json` – the 500 curated cards: file, name, rarity, description. Edit names or rarities here before first run
-- `db.py` – SQLite (`haifa.db`): cards, owners, cooldowns. Ownership is per server.
-- `config.py` – rarities, weights, points, daily limits, optional `IMAGE_BASE_URL`
-- `start.py` – one-command launcher that manages the `.venv`
-- `optimize_images.py` + `hooks/pre-commit` – image compression, automatic on commit
+- `src/db.ts` – SQLite via `bun:sqlite` (`haifa.db`): cards, owners, daily limits. Ownership is per server.
+- `src/config.ts` – rarities, weights, points, daily limits, `ROLL_ONLY_UNCLAIMED`, `IMAGE_BASE_URL`
+- `scripts/optimize-images.ts` + `hooks/pre-commit` – image compression (sharp), automatic on commit
 - `index.html` – landing page with the invite link (open it locally, or serve it from anywhere)

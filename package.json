@@ -1,0 +1,18 @@
+{
+  "name": "haifu-rolls",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "optimize": "bun run scripts/optimize-images.ts"
+  },
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "sharp": "^0.35.4"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.1",
+    "typescript": "^7.0.2"
+  }
+}

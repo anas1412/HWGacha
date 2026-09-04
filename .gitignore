@@ -3,3 +3,6 @@ __pycache__/
 .env
 .claude/
 .venv/
+node_modules/
+haifa.db-wal
+haifa.db-shm

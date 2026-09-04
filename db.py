@@ -59,8 +59,15 @@ def all_names():
     return [r["name"] for r in _conn.execute("SELECT name FROM cards")]
 
 
-def cards_in_rarity(rarity):
-    return _conn.execute("SELECT * FROM cards WHERE rarity = ?", (rarity,)).fetchall()
+def cards_in_rarity(rarity, unclaimed_in=None):
+    """All cards of a rarity; with unclaimed_in=guild_id, only those nobody in that server owns."""
+    if unclaimed_in is None:
+        return _conn.execute("SELECT * FROM cards WHERE rarity = ?", (rarity,)).fetchall()
+    return _conn.execute(
+        """SELECT c.* FROM cards c LEFT JOIN claims k ON k.card_id = c.id AND k.guild_id = ?
+           WHERE c.rarity = ? AND k.card_id IS NULL""",
+        (unclaimed_in, rarity),
+    ).fetchall()
 
 
 def get_card(card_id):
@@ -77,8 +84,17 @@ def find_card(query):
     ).fetchone()
 
 
-def pool_counts():
-    rows = _conn.execute("SELECT rarity, COUNT(*) AS n FROM cards GROUP BY rarity")
+def pool_counts(unclaimed_in=None):
+    """Cards per rarity; with unclaimed_in=guild_id, only those nobody in that server owns."""
+    if unclaimed_in is None:
+        rows = _conn.execute("SELECT rarity, COUNT(*) AS n FROM cards GROUP BY rarity")
+    else:
+        rows = _conn.execute(
+            """SELECT c.rarity, COUNT(*) AS n FROM cards c
+               LEFT JOIN claims k ON k.card_id = c.id AND k.guild_id = ?
+               WHERE k.card_id IS NULL GROUP BY c.rarity""",
+            (unclaimed_in,),
+        )
     return {r["rarity"]: r["n"] for r in rows}
 
 

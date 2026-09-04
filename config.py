@@ -15,6 +15,7 @@ ROLLS_PER_DAY = 3            # rolls each player gets per day
 # One claim per player per day (fixed).
 # Both reset at midnight, local time of the machine running the bot.
 CLAIM_WINDOW_SECONDS = 30    # how long the claim button stays alive after a roll
+ROLL_ONLY_UNCLAIMED = True   # True: /roll only shows cards nobody in the server owns yet
 
 IMAGES_DIR = "images"
 # Optional: serve card images from a public URL instead of uploading them as attachments.

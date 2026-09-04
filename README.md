@@ -27,6 +27,8 @@ Any new photo you drop in later gets a random **rarity** (weighted dice) and a n
 | 🟣 أسطورية | 6% | 20 |
 | 👑 الملكة | 2% | 50 |
 
+Rolls only show cards nobody in the server owns yet (`ROLL_ONLY_UNCLAIMED` in `config.py`; set to `False` to roll owned cards too).
+
 Limits: **3 rolls per day**, **1 claim per day**. Both reset at **midnight**, local time of the machine running the bot. Numbers live in `config.py`.
 
 ## Run locally

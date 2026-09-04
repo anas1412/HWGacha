@@ -10,7 +10,7 @@ from discord.ext import commands
 
 import db
 import scanner
-from config import CLAIM_WINDOW_SECONDS, IMAGE_BASE_URL, IMAGES_DIR, RARITIES, ROLLS_PER_DAY
+from config import CLAIM_WINDOW_SECONDS, IMAGE_BASE_URL, IMAGES_DIR, RARITIES, ROLL_ONLY_UNCLAIMED, ROLLS_PER_DAY
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
 log = logging.getLogger("bot")
@@ -39,13 +39,14 @@ def card_kwargs(card):
     return {"file": discord.File(os.path.join(IMAGES_DIR, card["file"]), filename=card["file"])}
 
 
-def pick_card():
-    pool = db.pool_counts()
+def pick_card(guild_id):
+    scope = guild_id if ROLL_ONLY_UNCLAIMED else None
+    pool = db.pool_counts(unclaimed_in=scope)
     tiers = [t for t in RARITIES if pool.get(t)]
     if not tiers:
         return None
     tier = random.choices(tiers, weights=[RARITIES[t]["weight"] for t in tiers])[0]
-    return random.choice(db.cards_in_rarity(tier))
+    return random.choice(db.cards_in_rarity(tier, unclaimed_in=scope))
 
 
 def fmt_wait(seconds):
@@ -184,9 +185,10 @@ async def roll(interaction: discord.Interaction):
             f"⏳ خلصت رميّات اليوم. تتجدد بعد {fmt_wait(db.seconds_until_midnight())}", ephemeral=True
         )
         return
-    card = pick_card()
+    card = pick_card(gid)
     if card is None:
-        await interaction.response.send_message("ما في كروت بعد. حطّ صور في مجلد images وجرّب /rescan", ephemeral=True)
+        msg = "كل الكروت مملوكة في هذا السيرفر. انتظر /divorce من أحد" if db.pool_counts() else "ما في كروت بعد. حطّ صور في مجلد images وجرّب /rescan"
+        await interaction.response.send_message(msg, ephemeral=True)
         return
     await interaction.response.defer()  # acknowledge within Discord's 3-second window
     db.record_roll(gid, uid)

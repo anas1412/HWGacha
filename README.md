@@ -16,6 +16,8 @@ Any new photo you drop in later gets a random **rarity** (weighted dice) and a n
 | `/gift <member> <name>` | Give a card away |
 | `/exchange <member> <my_card> <their_card>` | Propose a trade. The other member gets Accept / Decline buttons (5 min) |
 | `/rescan` | (Manage Server) register new photos in `images/` |
+| `/backup` | (bot owner) download the database file |
+| `/restore <file>` | (bot owner) replace the database with an uploaded `haifa.db` |
 
 ## Rarity
 
@@ -80,6 +82,18 @@ To compress everything by hand:
 ```bash
 bun run optimize
 ```
+
+## Hosting on Railway (persistent database)
+
+Railway wipes the container disk on every deploy, so the database must live on a **Volume**:
+
+1. In your Railway service: **Volumes → Add Volume**, mount path `/data`.
+2. **Variables**: add `DB_PATH=/data/haifa.db` (and `DISCORD_TOKEN` if not set yet). Redeploy.
+3. Move your existing database from your PC: stop the local bot, then in Discord run
+   `/restore` and attach your local `haifa.db`. The bot swaps the file in place and confirms the card count.
+4. Any time: `/backup` sends you the current database as a file. Keep one somewhere safe.
+
+`/backup` and `/restore` only work for the owner of the Discord application.
 
 ## Files
 

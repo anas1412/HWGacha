@@ -25,4 +25,5 @@ export const IMAGES_DIR = "images";
 // Optional: serve card images from a public URL instead of uploading them as attachments.
 // Leave empty ("") to upload attachments. Only works with a PUBLIC repo.
 export const IMAGE_BASE_URL = "https://raw.githubusercontent.com/anas1412/Haifu-Rolls/main/images";
-export const DB_PATH = "haifa.db";
+// Where the SQLite file lives. On hosts with a persistent volume, point this at it, e.g. DB_PATH=/data/haifa.db
+export const DB_PATH = process.env.DB_PATH || "haifa.db";

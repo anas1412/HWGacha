@@ -18,6 +18,7 @@ import {
   REST,
   Routes,
   SlashCommandBuilder,
+  User,
 } from "discord.js";
 import { join } from "node:path";
 import * as db from "./db";
@@ -142,7 +143,19 @@ const commands = [
     .setName("rescan")
     .setDescription("(إدارة) افحص الصور الجديدة في مجلد images")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+  new SlashCommandBuilder()
+    .setName("backup")
+    .setDescription("(صاحب البوت) نزّل نسخة من قاعدة البيانات")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+  new SlashCommandBuilder()
+    .setName("restore")
+    .setDescription("(صاحب البوت) استبدل قاعدة البيانات بملف haifa.db")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addAttachmentOption((o) => o.setName("file").setDescription("ملف haifa.db").setRequired(true)),
 ].map((c) => c.toJSON());
+
+// Bot owner(s): whoever owns the Discord application (a user or every member of its team).
+const ownerIds = new Set<string>();
 
 // ---------- command registration ----------
 
@@ -155,6 +168,9 @@ async function syncGuild(guild: Guild) {
 
 client.once(Events.ClientReady, async (c) => {
   db.init();
+  const app = await c.application.fetch();
+  if (app.owner instanceof User) ownerIds.add(app.owner.id);
+  else if (app.owner) for (const m of app.owner.members.values()) ownerIds.add(m.id);
   // Drop any global copies on Discord, otherwise every command would appear twice.
   await rest.put(Routes.applicationCommands(c.application.id), { body: [] });
   for (const guild of c.guilds.cache.values()) await syncGuild(guild);
@@ -278,6 +294,29 @@ async function handleCommand(i: ChatInputCommandInteraction) {
           msg.resource?.message?.edit({ content: ar("⌛ انتهى وقت العرض"), embeds: [], components: [] }).catch(() => {});
       }, EXCHANGE_WINDOW_SECONDS * 1000);
       return;
+    }
+
+    case "backup": {
+      if (!ownerIds.has(uid)) return void i.reply({ content: ar("هذا الأمر لصاحب البوت فقط"), ...Ephemeral });
+      await i.deferReply(Ephemeral);
+      const file = new AttachmentBuilder(Buffer.from(db.backupBytes()), { name: "haifa.db" });
+      return void i.editReply({ content: ar("نسخة قاعدة البيانات. احتفظ بها في مكان آمن."), files: [file] });
+    }
+
+    case "restore": {
+      if (!ownerIds.has(uid)) return void i.reply({ content: ar("هذا الأمر لصاحب البوت فقط"), ...Ephemeral });
+      await i.deferReply(Ephemeral);
+      const att = i.options.getAttachment("file", true);
+      const res = await fetch(att.url);
+      if (!res.ok) return void i.editReply(ar("ما قدرت أنزّل الملف"));
+      try {
+        db.replaceDatabase(new Uint8Array(await res.arrayBuffer()));
+      } catch (e) {
+        return void i.editReply(ar(`الملف ليس قاعدة بيانات صالحة (${(e as Error).message})`));
+      }
+      const pool = db.poolCounts();
+      const total = Object.values(pool).reduce((a, b) => a + (b ?? 0), 0);
+      return void i.editReply(ar(`✅ تم الاستبدال. ${total} كرت في القاعدة الجديدة.`));
     }
 
     case "rescan": {

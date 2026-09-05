@@ -2,6 +2,8 @@
 // Discord IDs are 64-bit snowflakes, bigger than a JS number can hold exactly, so they are
 // passed around as strings and read back with CAST(... AS TEXT).
 import { Database } from "bun:sqlite";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { DB_PATH, RARITIES, type Rarity } from "./config";
 
 export interface Card {
@@ -12,7 +14,27 @@ export interface Card {
   description: string;
 }
 
-const db = new Database(DB_PATH, { create: true });
+mkdirSync(dirname(DB_PATH), { recursive: true });
+let db = new Database(DB_PATH, { create: true });
+
+/** A consistent snapshot of the whole database as bytes (for /backup). */
+export function backupBytes(): Uint8Array {
+  const tmp = `${DB_PATH}.backup-${Date.now()}`;
+  db.exec(`VACUUM INTO '${tmp.replace(/'/g, "''")}'`);
+  const bytes = readFileSync(tmp);
+  rmSync(tmp);
+  return bytes;
+}
+
+/** Replace the database file with the given bytes (for /restore) and reopen it. */
+export function replaceDatabase(bytes: Uint8Array): void {
+  if (!Buffer.from(bytes.subarray(0, 16)).toString("latin1").startsWith("SQLite format 3")) throw new Error("not a SQLite file");
+  db.close();
+  for (const suffix of ["", "-wal", "-shm", "-journal"]) if (existsSync(DB_PATH + suffix)) rmSync(DB_PATH + suffix);
+  writeFileSync(DB_PATH, bytes);
+  db = new Database(DB_PATH);
+  init();
+}
 
 export function init(): void {
   db.exec(`
@@ -130,14 +152,15 @@ export function transfer(guildId: string, cardId: number, fromUser: string, toUs
   );
 }
 
-/** Atomically trade cardA (owned by userA) for cardB (owned by userB). Returns false if ownership changed. */
-export const swap = db.transaction((guildId: string, cardA: number, userA: string, cardB: number, userB: string): boolean => {
-  const q = db.query("UPDATE claims SET user_id = ? WHERE guild_id = ? AND card_id = ? AND user_id = ?");
-  const a = q.run(userB, guildId, cardA, userA).changes;
-  const b = q.run(userA, guildId, cardB, userB).changes;
-  if (a !== 1 || b !== 1) throw new Error("ownership changed"); // rolls the transaction back
-  return true;
-});
+/** Atomically trade cardA (owned by userA) for cardB (owned by userB). Throws if ownership changed. */
+export function swap(guildId: string, cardA: number, userA: string, cardB: number, userB: string): void {
+  db.transaction(() => {
+    const q = db.query("UPDATE claims SET user_id = ? WHERE guild_id = ? AND card_id = ? AND user_id = ?");
+    const a = q.run(userB, guildId, cardA, userA).changes;
+    const b = q.run(userA, guildId, cardB, userB).changes;
+    if (a !== 1 || b !== 1) throw new Error("ownership changed"); // rolls the transaction back
+  })();
+}
 
 export function collection(guildId: string, userId: string): Card[] {
   return db

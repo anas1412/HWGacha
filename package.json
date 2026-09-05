@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "bun run src/index.ts",
+    "start": "bun --smol run src/index.ts",
     "optimize": "bun run scripts/optimize-images.ts"
   },
   "dependencies": {

@@ -54,6 +54,8 @@ DISCORD_TOKEN=paste_token_here
 bun start
 ```
 
+`bun start` runs with `--smol`, which trades a little speed for a smaller memory footprint. Handy on free hosts.
+
 On first start the bot registers the 500 seeded cards. Add more photos to `images/` later and run `/rescan`.
 
 Slash commands can take up to an hour to appear the first time. Kick the bot and re-invite it if they don't show.
